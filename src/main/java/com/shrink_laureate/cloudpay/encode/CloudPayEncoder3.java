@@ -1,7 +1,9 @@
 package com.shrink_laureate.cloudpay.encode;
 
-public class CloudPayEncoder2 implements CloudPayEncoder {
-    private static final int COUNT_BITS = 3;
+public class CloudPayEncoder3 implements CloudPayEncoder {
+    private static boolean DEBUG = false;
+
+    private static final int COUNT_BITS = 4;
     private static final int CHAR_BITS = 6;
 
     private byte encodeChar(char c) {
@@ -43,8 +45,9 @@ public class CloudPayEncoder2 implements CloudPayEncoder {
     }
     
     public byte[] encode(String input) {
+        if (DEBUG) System.out.println(" * Encoding "+input+" ("+input.length()+")");
         char[] inputChars = input.toCharArray();
-        BitBuffer buffer = new BitBuffer(input.length());
+        BitBuffer2 buffer = new BitBuffer2(input.length());
         
         // find repeating sequences of characters
         main_loop:
@@ -53,7 +56,7 @@ public class CloudPayEncoder2 implements CloudPayEncoder {
                 if (j >= inputChars.length || inputChars[j] != inputChars[i]) {
                     int count = j - i;
                     char c = inputChars[i];
-                    System.out.println("   - Buffering "+count+" * '"+c+"'");
+                    if (DEBUG) System.out.println("   - Buffering "+count+" * '"+c+"'");
                     buffer.put((byte) count, COUNT_BITS);
                     buffer.put(encodeChar(c), CHAR_BITS);
                     i = j;
@@ -67,14 +70,16 @@ public class CloudPayEncoder2 implements CloudPayEncoder {
     }
 
     public String decode(byte[] input) {
-        System.out.print("   = [");
-        for (byte b : input) {
-            int i = b & 0xFF;
-            System.out.print("'"+i+"',");
+        if (DEBUG) {
+            System.out.print("   = [");
+            for (byte b : input) {
+                int i = b & 0xFF;
+                System.out.print("'"+i+"',");
+            }
+            System.out.println("]");
         }
-        System.out.println("]");
 
-        BitBuffer bytes = new BitBuffer(input);
+        BitBuffer2 bytes = new BitBuffer2(input);
 
         StringBuffer buffer = new StringBuffer(input.length * 4);
 
@@ -85,7 +90,7 @@ public class CloudPayEncoder2 implements CloudPayEncoder {
                 break;
             }
             char c = decodeChar(bytes.get(CHAR_BITS));
-            System.out.println("   - Writing "+count+" * '"+c+"'");
+            if (DEBUG) System.out.println("   - Writing "+count+" * '"+c+"'");
             for (int i = 0; i < count; i++) {
                 buffer.append(c);
             }

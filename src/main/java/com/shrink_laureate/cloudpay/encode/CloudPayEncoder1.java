@@ -1,8 +1,8 @@
 package com.shrink_laureate.cloudpay.encode;
 
-public class CloudPayEncoder2 implements CloudPayEncoder {
-    private static final int COUNT_BITS = 3;
-    private static final int CHAR_BITS = 6;
+import java.nio.ByteBuffer;
+
+public class CloudPayEncoder1 implements CloudPayEncoder {
 
     private byte encodeChar(char c) {
         if (c >= 'A' && c <= 'Z') {
@@ -44,7 +44,12 @@ public class CloudPayEncoder2 implements CloudPayEncoder {
     
     public byte[] encode(String input) {
         char[] inputChars = input.toCharArray();
-        BitBuffer buffer = new BitBuffer(input.length());
+        System.out.print("   = [");
+        for (char c : inputChars) {
+            System.out.print("'"+c+"',");
+        }
+        System.out.println("]");
+        ByteBuffer buffer = ByteBuffer.allocateDirect(input.length() * 2);
         
         // find repeating sequences of characters
         main_loop:
@@ -54,8 +59,8 @@ public class CloudPayEncoder2 implements CloudPayEncoder {
                     int count = j - i;
                     char c = inputChars[i];
                     System.out.println("   - Buffering "+count+" * '"+c+"'");
-                    buffer.put((byte) count, COUNT_BITS);
-                    buffer.put(encodeChar(c), CHAR_BITS);
+                    buffer.put((byte) count);
+                    buffer.put(encodeChar(c));
                     i = j;
                     continue main_loop;
                 }
@@ -63,7 +68,10 @@ public class CloudPayEncoder2 implements CloudPayEncoder {
         }
 
         // copy bytes to a buffer
-        return buffer.toArray();
+        byte[] bytes = new byte[buffer.position()];
+        buffer.rewind();
+        buffer.get(bytes);
+        return bytes;
     }
 
     public String decode(byte[] input) {
@@ -73,18 +81,17 @@ public class CloudPayEncoder2 implements CloudPayEncoder {
             System.out.print("'"+i+"',");
         }
         System.out.println("]");
-
-        BitBuffer bytes = new BitBuffer(input);
+        ByteBuffer bytes = ByteBuffer.allocateDirect(input.length);
+        bytes.put(input);
+        bytes.rewind();
+        bytes.limit(input.length);
 
         StringBuffer buffer = new StringBuffer(input.length * 4);
 
         // add repeating sequences to a buffer
-        while (bytes.has()) {
-            int count = (int) bytes.get(COUNT_BITS);
-            if (count == 0) {
-                break;
-            }
-            char c = decodeChar(bytes.get(CHAR_BITS));
+        while (bytes.hasRemaining()) {
+            int count = (int) bytes.get();
+            char c = decodeChar(bytes.get());
             System.out.println("   - Writing "+count+" * '"+c+"'");
             for (int i = 0; i < count; i++) {
                 buffer.append(c);
