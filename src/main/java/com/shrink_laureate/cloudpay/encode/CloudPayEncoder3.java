@@ -3,7 +3,7 @@ package com.shrink_laureate.cloudpay.encode;
 public class CloudPayEncoder3 implements CloudPayEncoder {
     private static boolean DEBUG = false;
 
-    private static final int COUNT_BITS = 4;
+    private static final int COUNT_BITS = 3;
     private static final int CHAR_BITS = 6;
 
     private byte encodeChar(char c) {
@@ -45,15 +45,22 @@ public class CloudPayEncoder3 implements CloudPayEncoder {
     }
     
     public byte[] encode(String input) {
-        if (DEBUG) System.out.println(" * Encoding "+input+" ("+input.length()+")");
+        int window = (int) Math.pow(2, COUNT_BITS) - 1;
+        if (DEBUG) {
+            System.out.println(" * Encoding "+input+" ("+input.length()+")");
+            System.out.println("   - Bits: "+COUNT_BITS+" and "+CHAR_BITS);
+            System.out.println("   - Window: "+window);
+        }
+
         char[] inputChars = input.toCharArray();
         BitBuffer2 buffer = new BitBuffer2(input.length());
         
         // find repeating sequences of characters
         main_loop:
         for (int i = 0; i < inputChars.length; ) {
+            // if (DEBUG) System.out.println("Window: "+i+".."+(i+window));
             for (int j = i + 1; j <= inputChars.length; j++) {
-                if (j >= inputChars.length || inputChars[j] != inputChars[i]) {
+                if (j >= inputChars.length || inputChars[j] != inputChars[i] || j >= i + window) {
                     int count = j - i;
                     char c = inputChars[i];
                     if (DEBUG) System.out.println("   - Buffering "+count+" * '"+c+"'");
