@@ -42,7 +42,7 @@ public class CloudPayEncoderTest {
         int percent = 100 - (int) Math.round(100.0 * (float) encoded.length / (float) input.length());
         // System.out.println(" * Encoded: "+hex(encoded));
         // System.out.println(" * Encoded: "+binary(encoded));
-        System.out.printf(" * Compressing %-20s %3d => %3d (%2d%% saving)\n", testName+":", input.length(), encoded.length, percent);
+        System.out.printf(" * Compressing %-20s %3d => %3d bytes (%2d%% saving)\n", testName+":", input.length(), encoded.length, percent);
         // System.out.println(" * Compressing "+testName+": "+encoded.length+" / "+input.length()+" ("+percent+"% saving)");
         return encoder.decode(encoded);
     }

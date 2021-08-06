@@ -1,11 +1,17 @@
 package com.shrink_laureate.cloudpay.encode;
 
 public class CloudPayEncoder3 implements CloudPayEncoder {
-    private static boolean DEBUG = false;
-
     private static final int COUNT_BITS = 3;
     private static final int CHAR_BITS = 6;
 
+    /**
+     * Encodes a character in 6 bits.
+     * This only encodes uppercase and lowercase characters and numbers.
+     * 
+     * @param  c  a character in the right range
+     * @return    a byte (actually only 6 bits) representing that character
+     * @throws IllegalArgumentException if the character isn't in the valid range
+     */
     private byte encodeChar(char c) {
         if (c >= 'A' && c <= 'Z') {
             return (byte) (c - 'A');
@@ -22,9 +28,17 @@ public class CloudPayEncoder3 implements CloudPayEncoder {
         // if (c == '/') {
         //     return 63;
         // }
-        return 63;
+        // return 63;
+        throw new IllegalArgumentException("Unknown character: '"+c+"'");
     }
 
+    /**
+     * Decode a 6-bit character.
+     * 
+     * @param  b  a byte (actually only 6 bits) encoding a character
+     * @return    the character represented by that number
+     * @throws IllegalArgumentException if the number isn't in the valid range
+     */
     private char decodeChar(byte b) {
         if (b < 26) {
             return (char) (b + 'A');
@@ -41,16 +55,19 @@ public class CloudPayEncoder3 implements CloudPayEncoder {
         // if (b == 63) {
         //     return '/';
         // }
-        return ' ';
+        // return ' ';
+        throw new IllegalArgumentException("Unknown encoded character: '"+((int)b)+"'");
     }
     
+    /**
+     * Compress a string in the right format as a byte array.
+     * 
+     * @param   input  A string containing letters and numbers only
+     * @return         The compressed representation of that string
+     * @throws IllegalArgumentException if any character in the string isn't in the valid range
+     */
     public byte[] encode(String input) {
         int window = (int) Math.pow(2, COUNT_BITS) - 1;
-        if (DEBUG) {
-            System.out.println(" * Encoding "+input+" ("+input.length()+")");
-            System.out.println("   - Bits: "+COUNT_BITS+" and "+CHAR_BITS);
-            System.out.println("   - Window: "+window);
-        }
 
         char[] inputChars = input.toCharArray();
         BitBuffer2 buffer = new BitBuffer2(input.length());
@@ -58,12 +75,10 @@ public class CloudPayEncoder3 implements CloudPayEncoder {
         // find repeating sequences of characters
         main_loop:
         for (int i = 0; i < inputChars.length; ) {
-            // if (DEBUG) System.out.println("Window: "+i+".."+(i+window));
             for (int j = i + 1; j <= inputChars.length; j++) {
                 if (j >= inputChars.length || inputChars[j] != inputChars[i] || j >= i + window) {
                     int count = j - i;
                     char c = inputChars[i];
-                    if (DEBUG) System.out.println("   - Buffering "+count+" * '"+c+"'");
                     buffer.put((byte) count, COUNT_BITS);
                     buffer.put(encodeChar(c), CHAR_BITS);
                     i = j;
@@ -76,18 +91,15 @@ public class CloudPayEncoder3 implements CloudPayEncoder {
         return buffer.toArray();
     }
 
+    /**
+     * Decompress a string as produced by the 'encode' method.
+     * 
+     * @param  input  A compressed string
+     * @return        The decompressed string
+     * @throws IllegalArgumentException if any encoded character isn't in the valid range
+     */
     public String decode(byte[] input) {
-        if (DEBUG) {
-            System.out.print("   = [");
-            for (byte b : input) {
-                int i = b & 0xFF;
-                System.out.print("'"+i+"',");
-            }
-            System.out.println("]");
-        }
-
         BitBuffer2 bytes = new BitBuffer2(input);
-
         StringBuffer buffer = new StringBuffer(input.length * 4);
 
         // add repeating sequences to a buffer
@@ -97,7 +109,6 @@ public class CloudPayEncoder3 implements CloudPayEncoder {
                 break;
             }
             char c = decodeChar(bytes.get(CHAR_BITS));
-            if (DEBUG) System.out.println("   - Writing "+count+" * '"+c+"'");
             for (int i = 0; i < count; i++) {
                 buffer.append(c);
             }
