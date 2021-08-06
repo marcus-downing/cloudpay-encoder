@@ -28,7 +28,7 @@ I considered common compression methods, such as Huffman coding, but these did n
 
 - In many compression algorithms, efficiency is only achieved when compressing larger inputs. For example, Zip compression has a large overhead containing its parameters and dictionary. When compressing a large enough file this overhead is worth it, but not for a short string.
 - Compression algorithms need to accomodate cases such as repeated sequences ("AbAbAbAb").
-- Sometimes you encounter an extended uncompressable section, for example when compressing
+- Sometimes you encounter an extended uncompressable section, for example when compressing images or already-compressed files.
 
 With that in mind I kept to the simplest method: a count followed by a letter. I chose the following limits:
 

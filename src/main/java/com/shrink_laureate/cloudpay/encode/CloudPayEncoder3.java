@@ -1,5 +1,11 @@
 package com.shrink_laureate.cloudpay.encode;
 
+/**
+ * Encoder that uses a BitBuffer2 to store a bit-dense representation
+ * of the string.
+ * 
+ * Characters are represented as 6-bit base64.
+ */
 public class CloudPayEncoder3 implements CloudPayEncoder {
     private static final int COUNT_BITS = 3;
     private static final int CHAR_BITS = 6;
@@ -67,6 +73,7 @@ public class CloudPayEncoder3 implements CloudPayEncoder {
      * @throws IllegalArgumentException if any character in the string isn't in the valid range
      */
     public byte[] encode(String input) {
+        // window: the longest sequence that can be represented in one block
         int window = (int) Math.pow(2, COUNT_BITS) - 1;
 
         char[] inputChars = input.toCharArray();

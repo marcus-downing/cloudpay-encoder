@@ -3,7 +3,7 @@ package com.shrink_laureate.cloudpay.encode;
 import java.util.Arrays;
 
 /**
- * A binary buffer that stores arbitrarily sized numbers
+ * A binary buffer that stores arbitrarily sized numbers.
  */
 public class BitBuffer2 {
     byte[] array;
@@ -21,6 +21,10 @@ public class BitBuffer2 {
         size = data.length;
     }
 
+    /**
+     * Is there more in the buffer to read?
+     * @return
+     */
     public boolean has() {
         return position < size;
     }
